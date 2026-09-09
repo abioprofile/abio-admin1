@@ -1,0 +1,56 @@
+@import 'tailwindcss';
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+}
+
+:root {
+  --brand-ink: #331400;
+  --brand-gold: #fed45c;
+  --brand-gold-hover: #fdd935;
+  --brand-maroon: #5d2d2b;
+  --brand-cream: #fef4ea;
+  --brand-cream-highlight: #fff7de;
+  --brand-red: #ea2228;
+  --brand-tan-border: #e0d5c8;
+  --brand-neutral: #ececed;
+  --brand-muted-text: #666464;
+
+  --background: var(--brand-cream);
+  --foreground: var(--brand-ink);
+  --card: #ffffff;
+  --card-foreground: var(--brand-ink);
+  --primary: var(--brand-gold);
+  --primary-foreground: var(--brand-ink);
+  --secondary: var(--brand-maroon);
+  --secondary-foreground: #ffffff;
+  --muted: var(--brand-neutral);
+  --muted-foreground: var(--brand-muted-text);
+  --destructive: var(--brand-red);
+  --border: var(--brand-tan-border);
+  --input: var(--brand-tan-border);
+  --ring: var(--brand-gold);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
