@@ -7,3 +7,8 @@ export async function getAdminMe() {
   const { data } = await apiClient.get<ApiResponse<StaffProfile>>('/admin/me')
   return data
 }
+
+export async function getMetrics(signal?: AbortSignal) {
+  const { data } = await apiClient.get<ApiResponse<import('../types').DashboardMetrics>>('/admin/astore/metrics', { signal })
+  return data.data
+}

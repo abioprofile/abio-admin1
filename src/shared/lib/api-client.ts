@@ -1,7 +1,13 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios'
 
+import { useAuthStore } from '@/features/auth/store/auth-store'
+import { queryClient } from '@/shared/lib/query-client'
 import { API_BASE_URL } from '@/shared/lib/env'
-import { clearAuthTokens, getAccessToken, getRefreshToken, setAuthTokens } from '@/shared/lib/auth-tokens'
+import {
+  getAccessToken,
+  getRefreshToken,
+  setAuthTokens,
+} from '@/shared/lib/auth-tokens'
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -26,22 +32,41 @@ apiClient.interceptors.request.use((config) => {
 
 type RetriableConfig = InternalAxiosRequestConfig & { _retried?: boolean }
 
+function expireSession() {
+  useAuthStore.getState().signOut()
+  queryClient.clear()
+}
+
 let refreshPromise: Promise<string | null> | null = null
 
 function refreshAccessToken(): Promise<string | null> {
   if (!refreshPromise) {
     refreshPromise = (async () => {
       const refreshToken = getRefreshToken()
+      const accessToken = getAccessToken()
 
       try {
         const { data } = await axios.post<{
           data: { accessToken: string; refreshToken: string }
-        }>(`${API_BASE_URL}/auth/refresh`, refreshToken ? { refreshToken } : {}, { withCredentials: true })
+        }>(
+          `${API_BASE_URL}/auth/refresh`,
+          refreshToken ? { refreshToken } : {},
+          { withCredentials: true },
+        )
 
+        if (
+          getAccessToken() !== accessToken ||
+          getRefreshToken() !== refreshToken
+        )
+          return null
         setAuthTokens(data.data.accessToken, data.data.refreshToken)
         return data.data.accessToken
       } catch {
-        clearAuthTokens()
+        if (
+          getAccessToken() === accessToken &&
+          getRefreshToken() === refreshToken
+        )
+          expireSession()
         return null
       } finally {
         refreshPromise = null
@@ -61,7 +86,12 @@ apiClient.interceptors.response.use(
       config?.url?.includes('/auth/refresh') ||
       config?.url?.includes('/auth/logout')
 
-    if (error.response?.status === 401 && config && !config._retried && !isAuthEndpoint) {
+    if (
+      error.response?.status === 401 &&
+      config &&
+      !config._retried &&
+      !isAuthEndpoint
+    ) {
       config._retried = true
       const newToken = await refreshAccessToken()
       if (newToken) {
@@ -70,6 +100,8 @@ apiClient.interceptors.response.use(
       }
     }
 
+    if (error.response?.status === 401 && config?._retried && !isAuthEndpoint)
+      expireSession()
     return Promise.reject(error)
   },
 )

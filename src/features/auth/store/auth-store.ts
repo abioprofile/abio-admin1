@@ -30,8 +30,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: Boolean(getStoredUser()),
 
   setSession: (user, tokens) => {
+    clearStoredStaff()
     setAuthSession(tokens, user)
-    set({ user, isAuthenticated: true })
+    set({ user, staff: null, isAuthenticated: true })
   },
 
   setStaff: (staff) => {

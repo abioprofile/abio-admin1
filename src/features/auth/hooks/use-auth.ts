@@ -26,6 +26,7 @@ export function useLogin() {
   return useMutation({
     mutationFn: (payload: LoginPayload) => login(payload),
     onSuccess: (res) => {
+      queryClient.clear()
       setSession(res.data.user, { accessToken: res.data.accessToken, refreshToken: res.data.refreshToken })
       queryClient.setQueryData(queryKeys.user, res.data.user)
     },

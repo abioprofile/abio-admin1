@@ -1,0 +1,66 @@
+# Abio Admin
+
+Responsive staff workspace built with React, Vite, TanStack Router/Query, and Zustand.
+
+## Development
+
+Run `npm install`, then `npm run dev`. The admin runs at http://localhost:3001.
+
+Set `VITE_API_BASE_URL` in `.env`:
+
+- Local backend: `/api/v1` (Vite proxies `/api` to `http://localhost:9800`).
+- Hosted backend: the full API base ending in `/api/v1`. Allow the admin origin in backend CORS configuration, with credentials enabled.
+
+Sign in with an existing verified, active admin or moderator account. Staff authorization is checked through `/admin/me`.
+
+## Implemented
+
+- Login, token refresh/retry, logout with refresh-token revocation, local session/cache cleanup, access-denied and connection-error screens.
+- Responsive staff shell with a collapsible mobile menu.
+- Live all-time dashboard metrics, order/payment breakdowns, recent orders, refresh, loading, empty and error states.
+
+- Products: search/status filters, pagination, create/edit, catalog visibility, and variant editing (stock, colors, image URLs, nullable price overrides).
+- Users: search/status/badge filters, pagination, profile detail, activation, verified badge grant/revoke, and badge records.
+- Verification: pending/approved/rejected queues, document links, and confirmed review actions.
+- Consistent SVG navigation icons and active-page breadcrumbs.
+
+Invitations remain disabled. Dashboard recent orders link to their order details. The app does not contain demo data; browser tests intercept API requests with fixtures.
+
+## Validation
+
+Run `npm run typecheck`, `npm run lint`, and `npm run build`.
+
+`tests/admin-flow.cjs` exercises authentication, authorization, mobile navigation, dashboard states, refresh, and logout. Start the dev server, then run it with an installed Playwright module:
+
+```sh
+PLAYWRIGHT_MODULE=/absolute/path/to/playwright node tests/admin-flow.cjs
+```
+
+An optional `SCREENSHOT_DIR` captures the real login screen and dashboard layouts using explicitly mocked test data. The browser suite performs no backend mutations.
+
+The management browser suite covers the product, variant, user, and verification workflows:
+
+```sh
+PLAYWRIGHT_MODULE=/absolute/path/to/playwright node tests/management-flow.cjs
+```
+
+Catalog image fields accept HTTP(S) URLs; uploads and editable existing slugs await backend support. All management mutations refresh related admin queries, including dashboard metrics and verification queues.
+
+## Themes
+
+`/themes` lists and previews profile themes; `/themes/new` creates them and `/themes/:id` edits them with live typography, link-button, and wallpaper previews. Creation uses JSON at `POST /themes` (admins and moderators). Themes can be edited from their preview and deleted after confirmation. The backend blocks deleting themes selected by profiles. Image wallpaper uses a hosted HTTP(S) URL; the theme controller currently does not persist uploaded files. Fonts use a curated system-font list and may vary by device.
+
+Run the fixture-based theme browser checks with:
+
+```sh
+PLAYWRIGHT_MODULE=/absolute/path/to/playwright node tests/themes-flow.cjs
+```
+
+## Orders and fulfillment
+
+`/orders` supports buyer/order/tracking search, order/payment filters, and pagination. Detail pages use checkout snapshots (with legacy fallbacks), show delivery totals and customization, and allow tracking updates/removal.
+
+Only the next fulfillment step is offered for successful payments. Cancellation is offered only for processing/ready orders without successful/reversed payments, with explicit confirmation. Backend responses remain authoritative; conflicts refetch the order and disable stale actions. Payments are read-only.
+
+Browser checks (mock API, no live orders changed):
+`PLAYWRIGHT_MODULE=/absolute/path/to/playwright node tests/orders-flow.cjs`

@@ -9,12 +9,51 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as StaffRouteImport } from './routes/_staff'
+import { Route as AccessDeniedRouteImport } from './routes/access-denied'
+import { Route as StaffIndexRouteImport } from './routes/_staff/index'
+import { Route as StaffInvitesRouteImport } from './routes/_staff/invites'
+import { Route as StaffVerificationRouteImport } from './routes/_staff/verification'
+import { Route as AdminAcceptInviteRouteImport } from './routes/admin/accept-invite'
 import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
+import { Route as StaffOrdersIndexRouteImport } from './routes/_staff/orders.index'
+import { Route as StaffOrdersIdRouteImport } from './routes/_staff/orders.$id'
+import { Route as StaffProductsIndexRouteImport } from './routes/_staff/products.index'
+import { Route as StaffProductsIdRouteImport } from './routes/_staff/products.$id'
+import { Route as StaffProductsNewRouteImport } from './routes/_staff/products.new'
+import { Route as StaffThemesIndexRouteImport } from './routes/_staff/themes.index'
+import { Route as StaffThemesIdRouteImport } from './routes/_staff/themes.$id'
+import { Route as StaffThemesNewRouteImport } from './routes/_staff/themes.new'
+import { Route as StaffUsersIndexRouteImport } from './routes/_staff/users.index'
+import { Route as StaffUsersIdRouteImport } from './routes/_staff/users.$id'
 
-const IndexRoute = IndexRouteImport.update({
+const StaffRoute = StaffRouteImport.update({
+  id: '/_staff',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccessDeniedRoute = AccessDeniedRouteImport.update({
+  id: '/access-denied',
+  path: '/access-denied',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StaffIndexRoute = StaffIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffInvitesRoute = StaffInvitesRouteImport.update({
+  id: '/invites',
+  path: '/invites',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffVerificationRoute = StaffVerificationRouteImport.update({
+  id: '/verification',
+  path: '/verification',
+  getParentRoute: () => StaffRoute,
+} as any)
+const AdminAcceptInviteRoute = AdminAcceptInviteRouteImport.update({
+  id: '/admin/accept-invite',
+  path: '/admin/accept-invite',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthSignInRoute = AuthSignInRouteImport.update({
@@ -22,40 +61,220 @@ const AuthSignInRoute = AuthSignInRouteImport.update({
   path: '/auth/sign-in',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StaffOrdersIndexRoute = StaffOrdersIndexRouteImport.update({
+  id: '/orders/',
+  path: '/orders/',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffOrdersIdRoute = StaffOrdersIdRouteImport.update({
+  id: '/orders/$id',
+  path: '/orders/$id',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffProductsIndexRoute = StaffProductsIndexRouteImport.update({
+  id: '/products/',
+  path: '/products/',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffProductsIdRoute = StaffProductsIdRouteImport.update({
+  id: '/products/$id',
+  path: '/products/$id',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffProductsNewRoute = StaffProductsNewRouteImport.update({
+  id: '/products/new',
+  path: '/products/new',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffThemesIndexRoute = StaffThemesIndexRouteImport.update({
+  id: '/themes/',
+  path: '/themes/',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffThemesIdRoute = StaffThemesIdRouteImport.update({
+  id: '/themes/$id',
+  path: '/themes/$id',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffThemesNewRoute = StaffThemesNewRouteImport.update({
+  id: '/themes/new',
+  path: '/themes/new',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffUsersIndexRoute = StaffUsersIndexRouteImport.update({
+  id: '/users/',
+  path: '/users/',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffUsersIdRoute = StaffUsersIdRouteImport.update({
+  id: '/users/$id',
+  path: '/users/$id',
+  getParentRoute: () => StaffRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof StaffIndexRoute
+  '/access-denied': typeof AccessDeniedRoute
+  '/invites': typeof StaffInvitesRoute
+  '/verification': typeof StaffVerificationRoute
+  '/admin/accept-invite': typeof AdminAcceptInviteRoute
   '/auth/sign-in': typeof AuthSignInRoute
+  '/orders/$id': typeof StaffOrdersIdRoute
+  '/products/$id': typeof StaffProductsIdRoute
+  '/products/new': typeof StaffProductsNewRoute
+  '/themes/$id': typeof StaffThemesIdRoute
+  '/themes/new': typeof StaffThemesNewRoute
+  '/users/$id': typeof StaffUsersIdRoute
+  '/orders/': typeof StaffOrdersIndexRoute
+  '/products/': typeof StaffProductsIndexRoute
+  '/themes/': typeof StaffThemesIndexRoute
+  '/users/': typeof StaffUsersIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/access-denied': typeof AccessDeniedRoute
+  '/invites': typeof StaffInvitesRoute
+  '/verification': typeof StaffVerificationRoute
+  '/admin/accept-invite': typeof AdminAcceptInviteRoute
   '/auth/sign-in': typeof AuthSignInRoute
+  '/': typeof StaffIndexRoute
+  '/orders/$id': typeof StaffOrdersIdRoute
+  '/products/$id': typeof StaffProductsIdRoute
+  '/products/new': typeof StaffProductsNewRoute
+  '/themes/$id': typeof StaffThemesIdRoute
+  '/themes/new': typeof StaffThemesNewRoute
+  '/users/$id': typeof StaffUsersIdRoute
+  '/orders': typeof StaffOrdersIndexRoute
+  '/products': typeof StaffProductsIndexRoute
+  '/themes': typeof StaffThemesIndexRoute
+  '/users': typeof StaffUsersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_staff': typeof StaffRouteWithChildren
+  '/access-denied': typeof AccessDeniedRoute
+  '/_staff/invites': typeof StaffInvitesRoute
+  '/_staff/verification': typeof StaffVerificationRoute
+  '/admin/accept-invite': typeof AdminAcceptInviteRoute
   '/auth/sign-in': typeof AuthSignInRoute
+  '/_staff/': typeof StaffIndexRoute
+  '/_staff/orders/$id': typeof StaffOrdersIdRoute
+  '/_staff/products/$id': typeof StaffProductsIdRoute
+  '/_staff/products/new': typeof StaffProductsNewRoute
+  '/_staff/themes/$id': typeof StaffThemesIdRoute
+  '/_staff/themes/new': typeof StaffThemesNewRoute
+  '/_staff/users/$id': typeof StaffUsersIdRoute
+  '/_staff/orders/': typeof StaffOrdersIndexRoute
+  '/_staff/products/': typeof StaffProductsIndexRoute
+  '/_staff/themes/': typeof StaffThemesIndexRoute
+  '/_staff/users/': typeof StaffUsersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth/sign-in'
+  fullPaths:
+    | '/'
+    | '/access-denied'
+    | '/invites'
+    | '/verification'
+    | '/admin/accept-invite'
+    | '/auth/sign-in'
+    | '/orders/$id'
+    | '/products/$id'
+    | '/products/new'
+    | '/themes/$id'
+    | '/themes/new'
+    | '/users/$id'
+    | '/orders/'
+    | '/products/'
+    | '/themes/'
+    | '/users/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth/sign-in'
-  id: '__root__' | '/' | '/auth/sign-in'
+  to:
+    | '/access-denied'
+    | '/invites'
+    | '/verification'
+    | '/admin/accept-invite'
+    | '/auth/sign-in'
+    | '/'
+    | '/orders/$id'
+    | '/products/$id'
+    | '/products/new'
+    | '/themes/$id'
+    | '/themes/new'
+    | '/users/$id'
+    | '/orders'
+    | '/products'
+    | '/themes'
+    | '/users'
+  id:
+    | '__root__'
+    | '/_staff'
+    | '/access-denied'
+    | '/_staff/invites'
+    | '/_staff/verification'
+    | '/admin/accept-invite'
+    | '/auth/sign-in'
+    | '/_staff/'
+    | '/_staff/orders/$id'
+    | '/_staff/products/$id'
+    | '/_staff/products/new'
+    | '/_staff/themes/$id'
+    | '/_staff/themes/new'
+    | '/_staff/users/$id'
+    | '/_staff/orders/'
+    | '/_staff/products/'
+    | '/_staff/themes/'
+    | '/_staff/users/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  StaffRoute: typeof StaffRouteWithChildren
+  AccessDeniedRoute: typeof AccessDeniedRoute
+  AdminAcceptInviteRoute: typeof AdminAcceptInviteRoute
   AuthSignInRoute: typeof AuthSignInRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_staff': {
+      id: '/_staff'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof StaffRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/access-denied': {
+      id: '/access-denied'
+      path: '/access-denied'
+      fullPath: '/access-denied'
+      preLoaderRoute: typeof AccessDeniedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_staff/': {
+      id: '/_staff/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof StaffIndexRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/_staff/invites': {
+      id: '/_staff/invites'
+      path: '/invites'
+      fullPath: '/invites'
+      preLoaderRoute: typeof StaffInvitesRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/_staff/verification': {
+      id: '/_staff/verification'
+      path: '/verification'
+      fullPath: '/verification'
+      preLoaderRoute: typeof StaffVerificationRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/admin/accept-invite': {
+      id: '/admin/accept-invite'
+      path: '/admin/accept-invite'
+      fullPath: '/admin/accept-invite'
+      preLoaderRoute: typeof AdminAcceptInviteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/sign-in': {
@@ -65,11 +284,117 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSignInRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_staff/orders/': {
+      id: '/_staff/orders/'
+      path: '/orders'
+      fullPath: '/orders/'
+      preLoaderRoute: typeof StaffOrdersIndexRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/_staff/orders/$id': {
+      id: '/_staff/orders/$id'
+      path: '/orders/$id'
+      fullPath: '/orders/$id'
+      preLoaderRoute: typeof StaffOrdersIdRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/_staff/products/': {
+      id: '/_staff/products/'
+      path: '/products'
+      fullPath: '/products/'
+      preLoaderRoute: typeof StaffProductsIndexRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/_staff/products/$id': {
+      id: '/_staff/products/$id'
+      path: '/products/$id'
+      fullPath: '/products/$id'
+      preLoaderRoute: typeof StaffProductsIdRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/_staff/products/new': {
+      id: '/_staff/products/new'
+      path: '/products/new'
+      fullPath: '/products/new'
+      preLoaderRoute: typeof StaffProductsNewRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/_staff/themes/': {
+      id: '/_staff/themes/'
+      path: '/themes'
+      fullPath: '/themes/'
+      preLoaderRoute: typeof StaffThemesIndexRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/_staff/themes/$id': {
+      id: '/_staff/themes/$id'
+      path: '/themes/$id'
+      fullPath: '/themes/$id'
+      preLoaderRoute: typeof StaffThemesIdRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/_staff/themes/new': {
+      id: '/_staff/themes/new'
+      path: '/themes/new'
+      fullPath: '/themes/new'
+      preLoaderRoute: typeof StaffThemesNewRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/_staff/users/': {
+      id: '/_staff/users/'
+      path: '/users'
+      fullPath: '/users/'
+      preLoaderRoute: typeof StaffUsersIndexRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/_staff/users/$id': {
+      id: '/_staff/users/$id'
+      path: '/users/$id'
+      fullPath: '/users/$id'
+      preLoaderRoute: typeof StaffUsersIdRouteImport
+      parentRoute: typeof StaffRoute
+    }
   }
 }
 
+interface StaffRouteChildren {
+  StaffInvitesRoute: typeof StaffInvitesRoute
+  StaffVerificationRoute: typeof StaffVerificationRoute
+  StaffIndexRoute: typeof StaffIndexRoute
+  StaffOrdersIdRoute: typeof StaffOrdersIdRoute
+  StaffProductsIdRoute: typeof StaffProductsIdRoute
+  StaffProductsNewRoute: typeof StaffProductsNewRoute
+  StaffThemesIdRoute: typeof StaffThemesIdRoute
+  StaffThemesNewRoute: typeof StaffThemesNewRoute
+  StaffUsersIdRoute: typeof StaffUsersIdRoute
+  StaffOrdersIndexRoute: typeof StaffOrdersIndexRoute
+  StaffProductsIndexRoute: typeof StaffProductsIndexRoute
+  StaffThemesIndexRoute: typeof StaffThemesIndexRoute
+  StaffUsersIndexRoute: typeof StaffUsersIndexRoute
+}
+
+const StaffRouteChildren: StaffRouteChildren = {
+  StaffInvitesRoute: StaffInvitesRoute,
+  StaffVerificationRoute: StaffVerificationRoute,
+  StaffIndexRoute: StaffIndexRoute,
+  StaffOrdersIdRoute: StaffOrdersIdRoute,
+  StaffProductsIdRoute: StaffProductsIdRoute,
+  StaffProductsNewRoute: StaffProductsNewRoute,
+  StaffThemesIdRoute: StaffThemesIdRoute,
+  StaffThemesNewRoute: StaffThemesNewRoute,
+  StaffUsersIdRoute: StaffUsersIdRoute,
+  StaffOrdersIndexRoute: StaffOrdersIndexRoute,
+  StaffProductsIndexRoute: StaffProductsIndexRoute,
+  StaffThemesIndexRoute: StaffThemesIndexRoute,
+  StaffUsersIndexRoute: StaffUsersIndexRoute,
+}
+
+const StaffRouteWithChildren = StaffRoute._addFileChildren(StaffRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  StaffRoute: StaffRouteWithChildren,
+  AccessDeniedRoute: AccessDeniedRoute,
+  AdminAcceptInviteRoute: AdminAcceptInviteRoute,
   AuthSignInRoute: AuthSignInRoute,
 }
 export const routeTree = rootRouteImport

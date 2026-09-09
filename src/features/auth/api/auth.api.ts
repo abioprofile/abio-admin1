@@ -1,3 +1,4 @@
+import { getRefreshToken } from '@/shared/lib/auth-tokens'
 import { apiClient } from '@/shared/lib/api-client'
 import type { ApiResponse } from '@/shared/types'
 
@@ -20,7 +21,7 @@ export async function refreshSession(payload: RefreshTokenPayload) {
 }
 
 export async function logout() {
-  const { data } = await apiClient.post<ApiResponse<null>>('/auth/logout')
+  const { data } = await apiClient.post<ApiResponse<null>>('/auth/logout', { refreshToken: getRefreshToken() ?? undefined })
   return data
 }
 
