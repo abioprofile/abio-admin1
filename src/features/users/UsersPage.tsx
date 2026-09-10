@@ -1,3 +1,4 @@
+import { useDebounce } from '@/shared/hooks/useDebounce'
 import { date } from '@/shared/lib/display'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
@@ -18,6 +19,8 @@ export function UsersPage() {
     active: '',
     hasBadge: '',
   })
+  const q = useDebounce(search.trim())
+  if (q !== filters.q) setFilters({ ...filters, q, page: 1 })
   const query = useQuery({
     queryKey: ['admin', 'users', filters],
     queryFn: ({ signal }) =>
@@ -37,13 +40,7 @@ export function UsersPage() {
         title="Users"
         description="The people behind your community. Manage access and verification."
       />
-      <form
-        className="toolbar"
-        onSubmit={(e) => {
-          e.preventDefault()
-          setFilters({ ...filters, page: 1, q: search.trim() })
-        }}
-      >
+      <div className="toolbar">
         <div className="search-field">
           <Icon name="search" size={17} />
           <input
@@ -53,7 +50,6 @@ export function UsersPage() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <button className="button">Search</button>
         <select
           aria-label="Account status"
           value={filters.active}
@@ -76,7 +72,7 @@ export function UsersPage() {
           <option value="true">Verified</option>
           <option value="false">Not verified</option>
         </select>
-      </form>
+      </div>
       <LoadingError
         pending={query.isPending}
         error={query.error}

@@ -24,7 +24,15 @@ Sign in with an existing verified, active admin or moderator account. Staff auth
 - Verification: pending/approved/rejected queues, document links, and confirmed review actions.
 - Consistent SVG navigation icons and active-page breadcrumbs.
 
-Invitations remain disabled. Dashboard recent orders link to their order details. The app does not contain demo data; browser tests intercept API requests with fixtures.
+Dashboard recent orders link to their order details. The app does not contain demo data; browser tests intercept API requests with fixtures.
+
+## Invitations
+
+Admins can open `/invites` to list invitations, filter by pending/accepted/expired status, and create moderator invitations. Creation sends an invitation email through the backend email provider. The dialog reports send failures and retains a one-time link for manual sharing. Set backend `ADMIN_URL` to the deployed admin origin for email links (local development defaults to `http://localhost:3001`). Existing invitations are not emailed retroactively; create a replacement to send a fresh link.
+
+The `/admin/accept-invite` page lets recipients sign in with their verified account, switch accounts when necessary, and accept the invitation before entering the staff workspace. The account email must match the invitation. Raw creation tokens are not persisted in local storage.
+
+Run the mocked invitation browser checks with `PLAYWRIGHT_MODULE=/absolute/path/to/playwright node tests/invites-flow.cjs`.
 
 ## Validation
 

@@ -1,3 +1,4 @@
+import { useDebounce } from '@/shared/hooks/useDebounce'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
@@ -18,6 +19,8 @@ export function OrdersPage() {
     status: '',
     paymentStatus: '',
   })
+  const q = useDebounce(search.trim())
+  if (q !== filters.q) setFilters({ ...filters, q, page: 1 })
   const query = useQuery({
     queryKey: ['admin', 'orders', filters],
     queryFn: ({ signal }) =>
@@ -46,13 +49,7 @@ export function OrdersPage() {
           </button>
         }
       />
-      <form
-        className="toolbar"
-        onSubmit={(e) => {
-          e.preventDefault()
-          setFilters({ ...filters, page: 1, q: search.trim() })
-        }}
-      >
+      <div className="toolbar">
         <div className="search-field">
           <Icon name="search" size={17} />
           <input
@@ -62,7 +59,6 @@ export function OrdersPage() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <button className="button">Search</button>
         <select
           aria-label="Order status"
           value={filters.status}
@@ -87,7 +83,7 @@ export function OrdersPage() {
             <option key={status}>{status}</option>
           ))}
         </select>
-      </form>
+      </div>
       <LoadingError
         pending={query.isPending}
         error={query.error}

@@ -61,11 +61,7 @@ export function AdminShell() {
               [
                 {
                   to: '/',
-                  label: path.startsWith('/orders')
-                    ? 'Orders'
-                    : path.startsWith('/invites')
-                      ? 'Invitations'
-                      : 'Overview',
+                  label: 'Overview',
                   icon: 'overview',
                 },
                 { to: '/products', label: 'Products', icon: 'products' },
@@ -152,7 +148,7 @@ export function AdminShell() {
   )
 }
 
-export function AccessError({ error, reset }: ErrorComponentProps) {
+export function AccessError({ error }: ErrorComponentProps) {
   const router = useRouter()
   return (
     <main className="center-page">
@@ -165,7 +161,6 @@ export function AccessError({ error, reset }: ErrorComponentProps) {
         <button
           className="button primary"
           onClick={() => {
-            reset()
             void router.invalidate()
           }}
         >

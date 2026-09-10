@@ -16,11 +16,13 @@ export interface CreatedInvite {
   email: string
   role: 'moderator'
   token: string
-  inviteUrl: string
+  inviteUrl: string | null
+  emailError?: string
+  emailStatus?: 'sent' | 'failed'
   expiresAt: string
 }
 export async function listInvites(
-  params: { page: number; status?: string },
+  params: { page: number; status?: string; q?: string },
   signal?: AbortSignal,
 ) {
   const { data } = await apiClient.get<

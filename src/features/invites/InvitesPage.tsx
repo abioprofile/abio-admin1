@@ -1,3 +1,4 @@
+import { useDebounce } from '@/shared/hooks/useDebounce'
 import { useState } from 'react'
 import { Navigate } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -14,7 +15,10 @@ import { Icon } from '@/shared/components/Icon'
 import { date } from '@/shared/lib/display'
 export function InvitesPage() {
   const staff = useStaffProfile()
-  const [filters, setFilters] = useState({ page: 1, status: '' })
+  const [filters, setFilters] = useState({ page: 1, status: '', q: '' })
+  const [search, setSearch] = useState('')
+  const q = useDebounce(search.trim())
+  if (q !== filters.q) setFilters({ ...filters, q, page: 1 })
   const [creating, setCreating] = useState(false)
   const query = useQuery({
     queryKey: ['admin', 'invites', filters],
@@ -37,11 +41,22 @@ export function InvitesPage() {
         }
       />
       <div className="toolbar">
+        <div className="search-field">
+          <Icon name="search" size={17} />
+          <input
+            aria-label="Search invitations"
+            placeholder="Search invited email"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
         <label className="filter-label">
           Invitation status
           <select
             value={filters.status}
-            onChange={(e) => setFilters({ page: 1, status: e.target.value })}
+            onChange={(e) =>
+              setFilters({ ...filters, page: 1, status: e.target.value })
+            }
           >
             <option value="">All invitations</option>
             <option value="pending">Pending</option>
@@ -150,8 +165,11 @@ function CreateInvite({ onClose }: { onClose: () => void }) {
         {created ? (
           <>
             <p className="muted">
-              Share this link with <strong>{created.email}</strong>. It expires{' '}
-              {date(created.expiresAt)}. No email has been sent.
+              {created.emailStatus === 'sent'
+                ? 'Invitation email sent to '
+                : 'The invitation was created, but the email was not sent. Share this link with '}
+              <strong>{created.email}</strong>. {created.emailError} It expires{' '}
+              {date(created.expiresAt)}.
             </p>
             <div className="request-reason">
               <label>

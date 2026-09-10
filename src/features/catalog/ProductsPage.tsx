@@ -1,3 +1,4 @@
+import { useDebounce } from '@/shared/hooks/useDebounce'
 import { safeUrl } from '@/shared/lib/display'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
@@ -15,6 +16,8 @@ import { formatKobo } from '@/shared/lib/money'
 export function ProductsPage() {
   const [search, setSearch] = useState('')
   const [filters, setFilters] = useState({ page: 1, q: '', active: '' })
+  const q = useDebounce(search.trim())
+  if (q !== filters.q) setFilters({ ...filters, q, page: 1 })
   const query = useQuery({
     queryKey: ['admin', 'products', filters],
     queryFn: ({ signal }) =>
@@ -39,13 +42,7 @@ export function ProductsPage() {
           </Link>
         }
       />
-      <form
-        className="toolbar"
-        onSubmit={(e) => {
-          e.preventDefault()
-          setFilters({ ...filters, page: 1, q: search.trim() })
-        }}
-      >
+      <div className="toolbar">
         <div className="search-field">
           <Icon name="search" size={17} />
           <input
@@ -55,7 +52,6 @@ export function ProductsPage() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <button className="button">Search</button>
         <select
           aria-label="Product status"
           value={filters.active}
@@ -67,7 +63,7 @@ export function ProductsPage() {
           <option value="true">Active</option>
           <option value="false">Inactive</option>
         </select>
-      </form>
+      </div>
       <LoadingError
         pending={query.isPending}
         error={query.error}

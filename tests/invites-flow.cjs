@@ -1,7 +1,194 @@
 // All invitation mutations are mocked. No emails or real invitations are sent.
-const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');const assert=require('node:assert/strict')
-;(async()=>{const browser=await chromium.launch({headless:true});const page=await browser.newPage({viewport:{width:1365,height:950}});page.setDefaultTimeout(10000);let role='admin';let email='guest@example.com';let status='pending';let invite=null;let errorCode=0;let accepted=0;const errors=[];page.on('pageerror',e=>errors.push(e.message))
-await page.route('**/api/v1/**',async route=>{const path=new URL(route.request().url()).pathname;const ok=data=>route.fulfill({status:200,json:{success:true,data,message:'OK',statusCode:200}});if(path.endsWith('/admin/me'))return role==='user'?route.fulfill({status:403,json:{message:'Not authorized'}}):ok({id:'s1',name:'Alex',email,roles:[role]});if(path.endsWith('/auth/login'))return ok({user:{id:'u1',name:'Guest',email,active:true},accessToken:'a',refreshToken:'r'});if(path.endsWith('/auth/logout'))return ok(null);if(path.endsWith('/invites/accept')){assert.equal(route.request().postDataJSON().token,'invite-test-token');if(errorCode)return route.fulfill({status:errorCode,json:{message:errorCode===403?'Invite email does not match your account':errorCode===410?'Invite has expired':'Invite already accepted'}});accepted++;role='moderator';return ok({role,email})}if(path.endsWith('/invites')&&route.request().method()==='POST'){invite={id:'i1',email:route.request().postDataJSON().email,role:'moderator',token:'invite-test-token',inviteUrl:'https://public.example.com/admin/accept-invite?token=invite-test-token',expiresAt:'2030-09-16',createdAt:'2026-09-09',acceptedAt:null,invitedBy:{name:'Alex'}};return ok(invite)}if(path.endsWith('/invites')){const filter=new URL(route.request().url()).searchParams.get('status');const rows=invite&&(!filter||filter===status)?[{...invite,status}]:[];return ok({invites:rows,pagination:{page:1,limit:10,total:rows.length,totalPages:rows.length?1:0}})}if(path.endsWith('/metrics'))return ok({orders:{total:0,byStatus:{}},payments:{revenueKobo:0,currency:'NGN',byStatus:{success:0}},catalog:{productsTotal:0,productsActive:0},users:{total:0,active:0},recentOrders:[]});return route.fulfill({status:404,json:{message:'Not found'}})})
-await page.goto('http://127.0.0.1:3001/invites');await page.getByText('No invitations here yet.').waitFor();await page.getByRole('button',{name:'Invite moderator'}).click();await page.getByLabel('Email address').fill('Guest@Example.com');await page.getByRole('button',{name:'Create invitation',exact:true}).click();await page.getByLabel('Invitation link').waitFor();assert.equal(invite.email,'guest@example.com');assert.equal(await page.getByLabel('Invitation link').inputValue(),'http://127.0.0.1:3001/admin/accept-invite?token=invite-test-token');assert(!JSON.stringify(await page.evaluate(()=>({...localStorage}))).includes('invite-test-token'));await page.getByRole('button',{name:'Done',exact:true}).click();await page.getByLabel('Invitation status').selectOption('expired');await page.getByText('No invitations here yet.').waitFor();await page.getByLabel('Invitation status').selectOption('pending');await page.getByText('guest@example.com',{exact:true}).waitFor()
-role='moderator';await page.reload();await page.getByRole('heading',{name:'This space is for staff.'}).waitFor();role='user';await page.goto('http://127.0.0.1:3001/admin/accept-invite?token=invite-test-token');await page.getByLabel('Email address').fill(email);await page.getByLabel('Password',{exact:true}).fill('password');await page.getByRole('button',{name:'Sign in →'}).click();await page.getByRole('button',{name:'Accept invitation',exact:true}).waitFor();assert(page.url().includes('token=invite-test-token'));errorCode=403;await page.getByRole('button',{name:'Accept invitation',exact:true}).click();await page.getByRole('alert').filter({hasText:'does not match'}).waitFor();await page.getByRole('button',{name:'Use another account'}).click();await page.getByLabel('Email address').fill(email);await page.getByLabel('Password',{exact:true}).fill('password');await page.getByRole('button',{name:'Sign in →'}).click();errorCode=410;await page.getByRole('button',{name:'Accept invitation',exact:true}).click();await page.getByRole('alert').filter({hasText:'expired'}).waitFor();errorCode=0;await page.getByRole('button',{name:'Accept invitation',exact:true}).click();await page.getByRole('heading',{name:'You’re on the team.'}).waitFor();assert.equal(accepted,1);await page.getByRole('link',{name:'Open workspace'}).click();await page.getByRole('heading',{name:'Store overview'}).waitFor();assert.equal(await page.getByRole('link',{name:'Invitations',exact:true}).count(),0)
-await page.goto('http://127.0.0.1:3001/admin/accept-invite');await page.getByRole('heading',{name:'Invitation link missing.'}).waitFor();role='admin';await page.setViewportSize({width:390,height:844});await page.goto('http://127.0.0.1:3001/invites');await page.getByRole('button',{name:'Invite moderator'}).click();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);if(process.env.SCREENSHOT_DIR)await page.screenshot({path:process.env.SCREENSHOT_DIR+'/invite-mobile-fixture.png',fullPage:true});assert.deepEqual(errors,[]);await browser.close();console.log('PASS: list filters, admin-only creation/access, local-origin one-time link, no token persistence, login return, wrong-account switch, expiry errors, acceptance promotes to staff, missing token, mobile modal.')})().catch(e=>{console.error(e);process.exit(1)})
+const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
+const assert = require("node:assert/strict");
+(async () => {
+  const browser = await chromium.launch({ headless: true });
+  const page = await browser.newPage({
+    viewport: { width: 1365, height: 950 },
+  });
+  page.setDefaultTimeout(10000);
+  let role = "admin";
+  let email = "guest@example.com";
+  let status = "pending";
+  let invite = null;
+  let errorCode = 0;
+  let accepted = 0;
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.route("**/api/v1/**", async (route) => {
+    const path = new URL(route.request().url()).pathname;
+    const ok = (data) =>
+      route.fulfill({
+        status: 200,
+        json: { success: true, data, message: "OK", statusCode: 200 },
+      });
+    if (path.endsWith("/admin/me"))
+      return role === "user"
+        ? route.fulfill({ status: 403, json: { message: "Not authorized" } })
+        : ok({ id: "s1", name: "Alex", email, roles: [role] });
+    if (path.endsWith("/auth/login"))
+      return ok({
+        user: { id: "u1", name: "Guest", email, active: true },
+        accessToken: "a",
+        refreshToken: "r",
+      });
+    if (path.endsWith("/auth/logout")) return ok(null);
+    if (path.endsWith("/invites/accept")) {
+      assert.equal(route.request().postDataJSON().token, "invite-test-token");
+      if (errorCode)
+        return route.fulfill({
+          status: errorCode,
+          json: {
+            message:
+              errorCode === 403
+                ? "Invite email does not match your account"
+                : errorCode === 410
+                  ? "Invite has expired"
+                  : "Invite already accepted",
+          },
+        });
+      accepted++;
+      role = "moderator";
+      return ok({ role, email });
+    }
+    if (path.endsWith("/invites") && route.request().method() === "POST") {
+      invite = {
+        id: "i1",
+        email: route.request().postDataJSON().email,
+        role: "moderator",
+        emailStatus: "sent",
+        token: "invite-test-token",
+        inviteUrl:
+          "https://public.example.com/admin/accept-invite?token=invite-test-token",
+        expiresAt: "2030-09-16",
+        createdAt: "2026-09-09",
+        acceptedAt: null,
+        invitedBy: { name: "Alex" },
+      };
+      return ok(invite);
+    }
+    if (path.endsWith("/invites")) {
+      const filter = new URL(route.request().url()).searchParams.get("status");
+      const q = new URL(route.request().url()).searchParams.get("q") || "";
+      const rows =
+        invite && invite.email.includes(q) && (!filter || filter === status) ? [{ ...invite, status }] : [];
+      return ok({
+        invites: rows,
+        pagination: {
+          page: 1,
+          limit: 10,
+          total: rows.length,
+          totalPages: rows.length ? 1 : 0,
+        },
+      });
+    }
+    if (path.endsWith("/metrics"))
+      return ok({
+        orders: { total: 0, byStatus: {} },
+        payments: { revenueKobo: 0, currency: "NGN", byStatus: { success: 0 } },
+        catalog: { productsTotal: 0, productsActive: 0 },
+        users: { total: 0, active: 0 },
+        recentOrders: [],
+      });
+    return route.fulfill({ status: 404, json: { message: "Not found" } });
+  });
+  await page.goto("http://127.0.0.1:3001/invites");
+  await page.getByText("No invitations here yet.").waitFor();
+  assert.equal(await page.getByRole("link", {name:"Overview", exact:true}).count(), 1);
+  assert.equal(await page.locator("nav .active").count(), 1);
+  await page.getByRole("button", { name: "Invite moderator" }).click();
+  await page.getByLabel("Email address").fill("Guest@Example.com");
+  await page
+    .getByRole("button", { name: "Create invitation", exact: true })
+    .click();
+  await page.getByLabel("Invitation link").waitFor();
+  await page.getByText("Invitation email sent to", {exact:false}).waitFor();
+  assert.equal(invite.email, "guest@example.com");
+  assert.equal(
+    await page.getByLabel("Invitation link").inputValue(),
+    "http://127.0.0.1:3001/admin/accept-invite?token=invite-test-token",
+  );
+  assert(
+    !JSON.stringify(await page.evaluate(() => ({ ...localStorage }))).includes(
+      "invite-test-token",
+    ),
+  );
+  await page.getByRole("button", { name: "Done", exact: true }).click();
+  await page.getByLabel("Invitation status").selectOption("expired");
+  await page.getByText("No invitations here yet.").waitFor();
+  await page.getByLabel("Invitation status").selectOption("pending");
+  await page.getByText("guest@example.com", { exact: true }).waitFor();
+  await page.getByLabel("Search invitations").fill("missing");
+  await page.getByText("No invitations here yet.").waitFor();
+  await page.getByLabel("Search invitations").fill("");
+  await page.getByText("guest@example.com", {exact:true}).waitFor();
+  role = "moderator";
+  await page.reload();
+  await page
+    .getByRole("heading", { name: "This space is for staff." })
+    .waitFor();
+  role = "user";
+  await page.goto(
+    "http://127.0.0.1:3001/admin/accept-invite?token=invite-test-token",
+  );
+  await page.getByLabel("Email address").fill(email);
+  await page.getByLabel("Password", { exact: true }).fill("password");
+  await page.getByRole("button", { name: "Sign in →" }).click();
+  await page
+    .getByRole("button", { name: "Accept invitation", exact: true })
+    .waitFor();
+  assert(page.url().includes("token=invite-test-token"));
+  errorCode = 403;
+  await page
+    .getByRole("button", { name: "Accept invitation", exact: true })
+    .click();
+  await page.getByRole("alert").filter({ hasText: "does not match" }).waitFor();
+  await page.getByRole("button", { name: "Use another account" }).click();
+  await page.getByLabel("Email address").fill(email);
+  await page.getByLabel("Password", { exact: true }).fill("password");
+  await page.getByRole("button", { name: "Sign in →" }).click();
+  errorCode = 410;
+  await page
+    .getByRole("button", { name: "Accept invitation", exact: true })
+    .click();
+  await page.getByRole("alert").filter({ hasText: "expired" }).waitFor();
+  errorCode = 0;
+  await page
+    .getByRole("button", { name: "Accept invitation", exact: true })
+    .click();
+  await page.getByRole("heading", { name: "You’re on the team." }).waitFor();
+  assert.equal(accepted, 1);
+  await page.getByRole("link", { name: "Open workspace" }).click();
+  await page.getByRole("heading", { name: "Store overview" }).waitFor();
+  assert.equal(
+    await page.getByRole("link", { name: "Invitations", exact: true }).count(),
+    0,
+  );
+  await page.goto("http://127.0.0.1:3001/admin/accept-invite");
+  await page
+    .getByRole("heading", { name: "Invitation link missing." })
+    .waitFor();
+  role = "admin";
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("http://127.0.0.1:3001/invites");
+  await page.getByRole("button", { name: "Invite moderator" }).click();
+  assert.equal(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+    true,
+  );
+  if (process.env.SCREENSHOT_DIR)
+    await page.screenshot({
+      path: process.env.SCREENSHOT_DIR + "/invite-mobile-fixture.png",
+      fullPage: true,
+    });
+  assert.deepEqual(errors, []);
+  await browser.close();
+  console.log(
+    "PASS: list filters, admin-only creation/access, local-origin one-time link, no token persistence, login return, wrong-account switch, expiry errors, acceptance promotes to staff, missing token, mobile modal.",
+  );
+})().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

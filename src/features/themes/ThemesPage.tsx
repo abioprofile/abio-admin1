@@ -1,3 +1,4 @@
+import { useDebounce } from '@/shared/hooks/useDebounce'
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -24,6 +25,7 @@ export function ThemesPage() {
     },
   })
   const [search, setSearch] = useState('')
+  const debouncedSearch = useDebounce(search)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const query = useQuery({
     queryKey: ['admin', 'themes'],
@@ -31,7 +33,7 @@ export function ThemesPage() {
   })
   const selected = query.data?.find((theme) => theme.id === selectedId)
   const themes = query.data?.filter((theme) =>
-    theme.name.toLowerCase().includes(search.toLowerCase().trim()),
+    theme.name.toLowerCase().includes(debouncedSearch.toLowerCase().trim()),
   )
   return (
     <main className="dashboard">
@@ -55,7 +57,11 @@ export function ThemesPage() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        {query.data && <span className="muted">{themes?.length === 1 ? '1 theme' : `${themes?.length} themes`}</span>}
+        {query.data && (
+          <span className="muted">
+            {themes?.length === 1 ? '1 theme' : `${themes?.length} themes`}
+          </span>
+        )}
       </div>
       <LoadingError
         pending={query.isPending}

@@ -188,7 +188,7 @@ const metrics = {
   mode = 'moderator'
   await page.getByRole('button', { name: 'Retry connection' }).click()
   await page.getByRole('heading', { name: 'Store overview' }).waitFor()
-  assert.equal(await page.getByRole('button', { name: 'Invites' }).count(), 0)
+  assert.equal(await page.getByRole('link', { name: 'Invitations', exact: true }).count(), 0)
   mode = 'empty'
   await page.getByRole('button', { name: 'Refresh', exact: true }).click()
   await page.getByText('Your first order starts the story.').waitFor()
