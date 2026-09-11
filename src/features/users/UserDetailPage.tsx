@@ -12,12 +12,13 @@ import {
   Status,
 } from '@/shared/components/Management'
 import { Icon } from '@/shared/components/Icon'
-type Action = 'deactivate' | 'reactivate' | 'grant' | 'revoke'
+type Action = 'deactivate' | 'reactivate' | 'grant' | 'revoke' | 'revoke-moderator'
 const actionLabels: Record<Action, string> = {
   deactivate: 'Deactivate account',
   reactivate: 'Reactivate account',
   grant: 'Grant verified badge',
   revoke: 'Revoke verified badge',
+  'revoke-moderator': 'Revoke moderator',
 }
 export function UserDetailPage({ id }: { id: string }) {
   const client = useQueryClient()
@@ -35,17 +36,20 @@ export function UserDetailPage({ id }: { id: string }) {
         ? management.grant(id)
         : selected === 'revoke'
           ? management.revoke(id, reason.trim())
-          : management.setActive(id, selected === 'reactivate'),
-    onSuccess: async () => {
+          : selected === 'revoke-moderator'
+            ? management.revokeModerator(id, reason)
+            : management.setActive(id, selected === 'reactivate'),
+    onSuccess: async (_, selected) => {
       await client.invalidateQueries({ queryKey: ['admin'] })
       setAction(null)
-      setSuccess('User updated successfully.')
+      setSuccess(selected === 'revoke-moderator' ? 'Moderator role revoked successfully.' : 'User updated successfully.')
     },
     onError: () => {
       void client.invalidateQueries({ queryKey: ['admin', 'user-detail', id] })
     },
   })
   const user = query.data
+  const canRevokeModerator = Boolean(staff?.roles.includes('admin') && user?.roles.includes('moderator'))
   function choose(selected: Action) {
     mutation.reset()
     setReason('')
@@ -113,6 +117,16 @@ export function UserDetailPage({ id }: { id: string }) {
               </dl>
             </section>
             <div className="stack">
+              {canRevokeModerator && (
+                <section className="panel detail-panel">
+                  <h2>Moderator access</h2>
+                  <p className="muted">Remove this user's moderator role. Their account status and any admin role are preserved.</p>
+                  <button className="button danger" onClick={() => choose('revoke-moderator')}>
+                    <Icon name="users" size={17} />
+                    Revoke moderator
+                  </button>
+                </section>
+              )}
               <section className="panel detail-panel">
                 <h2>Account access</h2>
                 <p className="muted">
@@ -196,11 +210,14 @@ export function UserDetailPage({ id }: { id: string }) {
             className="editor-form"
             onSubmit={(e) => {
               e.preventDefault()
+              if (action === 'revoke-moderator' && !canRevokeModerator) return
               mutation.mutate(action)
             }}
           >
             <p className="muted">
-              {action === 'deactivate'
+              {action === 'revoke-moderator'
+                ? `Remove the moderator role from ${user?.name || user?.email}? Any admin role they hold will remain.`
+                : action === 'deactivate'
                 ? `Deactivate ${user?.name || user?.email}? Their existing sessions will stop working.`
                 : action === 'reactivate'
                   ? `Restore account access for ${user?.name || user?.email}?`
@@ -210,7 +227,7 @@ export function UserDetailPage({ id }: { id: string }) {
             </p>
             <Feedback error={mutation.error} />
             <fieldset disabled={mutation.isPending}>
-              {action === 'revoke' && (
+              {(action === 'revoke' || action === 'revoke-moderator') && (
                 <label>
                   Reason (optional)
                   <textarea
@@ -230,7 +247,8 @@ export function UserDetailPage({ id }: { id: string }) {
                   Cancel
                 </button>
                 <button
-                  className={`button ${action === 'deactivate' || action === 'revoke' ? 'danger' : 'primary'}`}
+                  disabled={action === 'revoke-moderator' && !canRevokeModerator}
+                  className={`button ${action === 'deactivate' || action === 'revoke' || action === 'revoke-moderator' ? 'danger' : 'primary'}`}
                 >
                   {mutation.isPending ? 'Saving…' : actionLabels[action]}
                 </button>

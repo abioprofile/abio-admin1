@@ -116,6 +116,10 @@ export const management = {
     get<UserDetail>(`/admin/users/${id}`, undefined, signal),
   setActive: (id: string, active: boolean) =>
     write('patch', `/admin/users/${id}`, { active }),
+  revokeModerator: (id: string, reason?: string) =>
+    write('post', `/admin/users/${id}/roles/moderator/revoke`, {
+      reason: reason?.trim() || undefined,
+    }),
   grant: (id: string) =>
     write('post', `/admin/users/${id}/badges`, { badgeType: 'verified' }),
   revoke: (id: string, reason?: string) =>
