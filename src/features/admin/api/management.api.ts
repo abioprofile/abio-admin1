@@ -9,7 +9,20 @@ export interface Variant {
   imageUrls: string[]
   active: boolean
 }
+export interface ProductMetadata {
+  tagline?: string
+  badge?: string
+  features?: string[]
+  preview?: {
+    enabled: boolean
+    defaultColor: string
+    frontOverlayUrl?: string
+    backOverlayUrl?: string
+  }
+}
 export interface Product {
+  imageUrls: string[]
+  metadata: ProductMetadata
   id: string
   name: string
   slug: string
@@ -21,6 +34,8 @@ export interface Product {
   variants: Variant[]
 }
 export interface ProductInput {
+  imageUrls?: string[]
+  metadata?: ProductMetadata
   name: string
   slug?: string
   description?: string | null

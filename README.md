@@ -72,3 +72,13 @@ Only the next fulfillment step is offered for successful payments. Cancellation 
 
 Browser checks (mock API, no live orders changed):
 `PLAYWRIGHT_MODULE=/absolute/path/to/playwright node tests/orders-flow.cjs`
+
+## Catalog source of truth
+
+Products now feed the public store, dashboard store, and landing product section in `new-abio` through the public catalog API. Product metadata includes tagline, badge, feature bullets, and optional dynamic preview configuration. Admin product editing also supports editable slugs and ordered product gallery URLs.
+
+Use hosted gallery URLs in this order: front/cover, back, extra photos. Variant galleries override the product gallery; empty variant galleries use the product gallery. Dynamic preview overlays should be transparent artwork with no baked-in background color. Keep full-color product photos in the gallery. Existing products retain empty metadata until edited; no demo products or stock quantities are seeded.
+
+The customer store uses catalog prices without discounts. Standard options carry variant IDs, stock, colors, and price overrides; custom selections carry name, preferred color, instructions, and optional uploaded artwork. Cart selections remain on-device in this phase; server cart synchronization and payment checkout are deferred. Legacy static cart entries are cleared by a version migration because their IDs are not backend product IDs.
+
+Regression check with both dev servers running: `PLAYWRIGHT_MODULE=/absolute/path/to/playwright node tests/catalog-source.cjs`. Requests, uploads, and product writes are mocked.

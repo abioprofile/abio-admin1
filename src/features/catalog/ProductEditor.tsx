@@ -87,7 +87,27 @@ function ProductForm({ product }: { product?: Product }) {
           String(fields.get('description')).trim() ||
           (product ? null : undefined),
         active: fields.get('active') === 'on',
-        ...(!product && fields.get('slug')
+        imageUrls: String(fields.get('images'))
+          .split('\n')
+          .map((s) => s.trim())
+          .filter(Boolean),
+        metadata: {
+          tagline: String(fields.get('tagline')).trim(),
+          badge: String(fields.get('badge')).trim(),
+          features: String(fields.get('features'))
+            .split('\n')
+            .map((s) => s.trim())
+            .filter(Boolean),
+          preview: {
+            enabled: fields.get('previewEnabled') === 'on',
+            defaultColor: String(fields.get('defaultColor')),
+            frontOverlayUrl:
+              String(fields.get('frontOverlay')).trim() || undefined,
+            backOverlayUrl:
+              String(fields.get('backOverlay')).trim() || undefined,
+          },
+        },
+        ...(fields.get('slug')
           ? { slug: String(fields.get('slug')).trim() }
           : {}),
       })
@@ -156,15 +176,88 @@ function ProductForm({ product }: { product?: Product }) {
                 maxLength={140}
                 pattern="[a-z0-9]+(-[a-z0-9]+)*"
                 defaultValue={product?.slug}
-                disabled={Boolean(product)}
                 placeholder="Auto-generated if blank"
               />
+              <small>Optional: lowercase words separated by hyphens.</small>
+            </label>
+            <label>
+              Tagline
+              <input
+                name="tagline"
+                maxLength={200}
+                defaultValue={product?.metadata?.tagline ?? ''}
+              />
+            </label>
+            <label>
+              Product badge
+              <input
+                name="badge"
+                maxLength={40}
+                placeholder="Optional, e.g. Bestseller"
+                defaultValue={product?.metadata?.badge ?? ''}
+              />
+            </label>
+            <label className="full-width">
+              Features
+              <textarea
+                name="features"
+                rows={4}
+                defaultValue={product?.metadata?.features?.join('\n') ?? ''}
+              />
+              <small>One feature per line; up to 12.</small>
+            </label>
+            <label className="full-width">
+              Product gallery URLs
+              <textarea
+                name="images"
+                rows={4}
+                defaultValue={product?.imageUrls?.join('\n') ?? ''}
+              />
               <small>
-                {product
-                  ? 'The product URL is fixed after creation.'
-                  : 'Optional: lowercase words separated by hyphens.'}
+                One hosted image URL per line, up to 10. Order: front (cover),
+                back, then additional views. Variant galleries follow the same
+                order.
               </small>
             </label>
+            <label className="check-label">
+              <input
+                name="previewEnabled"
+                type="checkbox"
+                defaultChecked={product?.metadata?.preview?.enabled ?? false}
+              />
+              Enable dynamic card preview
+            </label>
+            <label>
+              Default preview color
+              <input
+                type="color"
+                name="defaultColor"
+                defaultValue={
+                  product?.metadata?.preview?.defaultColor ?? '#000000'
+                }
+              />
+            </label>
+            <label>
+              Front transparent artwork URL
+              <input
+                type="url"
+                name="frontOverlay"
+                defaultValue={product?.metadata?.preview?.frontOverlayUrl ?? ''}
+              />
+            </label>
+            <label>
+              Back transparent artwork URL
+              <input
+                type="url"
+                name="backOverlay"
+                defaultValue={product?.metadata?.preview?.backOverlayUrl ?? ''}
+              />
+            </label>
+            <p className="muted full-width">
+              Use transparent artwork with no baked-in card background. The
+              storefront applies the chosen color beneath it; uploaded gallery
+              photos remain available.
+            </p>
             <label className="full-width">
               Description
               <textarea
