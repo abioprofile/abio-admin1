@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as StaffRouteImport } from './routes/_staff'
 import { Route as AccessDeniedRouteImport } from './routes/access-denied'
 import { Route as StaffIndexRouteImport } from './routes/_staff/index'
+import { Route as StaffBusinessInquiriesRouteImport } from './routes/_staff/business-inquiries'
 import { Route as StaffInvitesRouteImport } from './routes/_staff/invites'
 import { Route as StaffVerificationRouteImport } from './routes/_staff/verification'
 import { Route as AdminAcceptInviteRouteImport } from './routes/admin/accept-invite'
@@ -39,6 +40,11 @@ const AccessDeniedRoute = AccessDeniedRouteImport.update({
 const StaffIndexRoute = StaffIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffBusinessInquiriesRoute = StaffBusinessInquiriesRouteImport.update({
+  id: '/business-inquiries',
+  path: '/business-inquiries',
   getParentRoute: () => StaffRoute,
 } as any)
 const StaffInvitesRoute = StaffInvitesRouteImport.update({
@@ -115,6 +121,7 @@ const StaffUsersIdRoute = StaffUsersIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof StaffIndexRoute
   '/access-denied': typeof AccessDeniedRoute
+  '/business-inquiries': typeof StaffBusinessInquiriesRoute
   '/invites': typeof StaffInvitesRoute
   '/verification': typeof StaffVerificationRoute
   '/admin/accept-invite': typeof AdminAcceptInviteRoute
@@ -132,6 +139,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/access-denied': typeof AccessDeniedRoute
+  '/business-inquiries': typeof StaffBusinessInquiriesRoute
   '/invites': typeof StaffInvitesRoute
   '/verification': typeof StaffVerificationRoute
   '/admin/accept-invite': typeof AdminAcceptInviteRoute
@@ -152,6 +160,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_staff': typeof StaffRouteWithChildren
   '/access-denied': typeof AccessDeniedRoute
+  '/_staff/business-inquiries': typeof StaffBusinessInquiriesRoute
   '/_staff/invites': typeof StaffInvitesRoute
   '/_staff/verification': typeof StaffVerificationRoute
   '/admin/accept-invite': typeof AdminAcceptInviteRoute
@@ -173,6 +182,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/access-denied'
+    | '/business-inquiries'
     | '/invites'
     | '/verification'
     | '/admin/accept-invite'
@@ -190,6 +200,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/access-denied'
+    | '/business-inquiries'
     | '/invites'
     | '/verification'
     | '/admin/accept-invite'
@@ -209,6 +220,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_staff'
     | '/access-denied'
+    | '/_staff/business-inquiries'
     | '/_staff/invites'
     | '/_staff/verification'
     | '/admin/accept-invite'
@@ -254,6 +266,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof StaffIndexRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/_staff/business-inquiries': {
+      id: '/_staff/business-inquiries'
+      path: '/business-inquiries'
+      fullPath: '/business-inquiries'
+      preLoaderRoute: typeof StaffBusinessInquiriesRouteImport
       parentRoute: typeof StaffRoute
     }
     '/_staff/invites': {
@@ -358,6 +377,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface StaffRouteChildren {
+  StaffBusinessInquiriesRoute: typeof StaffBusinessInquiriesRoute
   StaffInvitesRoute: typeof StaffInvitesRoute
   StaffVerificationRoute: typeof StaffVerificationRoute
   StaffIndexRoute: typeof StaffIndexRoute
@@ -374,6 +394,7 @@ interface StaffRouteChildren {
 }
 
 const StaffRouteChildren: StaffRouteChildren = {
+  StaffBusinessInquiriesRoute: StaffBusinessInquiriesRoute,
   StaffInvitesRoute: StaffInvitesRoute,
   StaffVerificationRoute: StaffVerificationRoute,
   StaffIndexRoute: StaffIndexRoute,
