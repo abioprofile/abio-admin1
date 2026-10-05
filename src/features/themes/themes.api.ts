@@ -39,8 +39,18 @@ export async function listThemes(signal?: AbortSignal) {
   })
   return data.data
 }
-export async function createTheme(body: ThemeInput) {
-  const { data } = await apiClient.post<ApiResponse<Theme>>('/themes', body)
+function themeBody(body: ThemeInput, file?: File) {
+  if (!file) return body
+  const form = new FormData()
+  form.append('name', body.name)
+  form.append('font_config', JSON.stringify(body.font_config))
+  form.append('corner_config', JSON.stringify(body.corner_config))
+  form.append('wallpaper_config', JSON.stringify({ type: 'image' }))
+  form.append('wallpaper_config[image]', file)
+  return form
+}
+export async function createTheme(body: ThemeInput, file?: File) {
+  const { data } = await apiClient.post<ApiResponse<Theme>>('/themes', themeBody(body, file))
   return data.data
 }
 
@@ -50,10 +60,10 @@ export async function getTheme(id: string, signal?: AbortSignal) {
   })
   return data.data
 }
-export async function updateTheme(id: string, body: ThemeInput) {
+export async function updateTheme(id: string, body: ThemeInput, file?: File) {
   const { data } = await apiClient.patch<ApiResponse<Theme>>(
     `/themes/${id}`,
-    body,
+    themeBody(body, file),
   )
   return data.data
 }

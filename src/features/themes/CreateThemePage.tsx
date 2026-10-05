@@ -15,7 +15,7 @@ import {
   LoadingError,
 } from '@/shared/components/Management'
 import { Icon } from '@/shared/components/Icon'
-import { safeUrl } from '@/shared/lib/display'
+import { isUploadedImage, validateImage } from '@/shared/lib/image-upload'
 const initial: ThemeInput = {
   name: '',
   font_config: {
@@ -87,10 +87,11 @@ export function CreateThemePage({ existing }: { existing?: Theme }) {
       ? (draft.wallpaper_config.backgroundColor[1]?.color ?? '#b8cf9b')
       : '#b8cf9b',
   )
+  const [imageFile, setImageFile] = useState<File>()
   const [image, setImage] = useState(draft.wallpaper_config.image ?? '')
   const mutation = useMutation({
     mutationFn: (body: ThemeInput) =>
-      existing ? updateTheme(existing.id, body) : createTheme(body),
+      existing ? updateTheme(existing.id, body, body.wallpaper_config.type === 'image' ? imageFile : undefined) : createTheme(body, body.wallpaper_config.type === 'image' ? imageFile : undefined),
     onSuccess: async () => {
       await client.invalidateQueries({ queryKey: ['admin'] })
       await navigate({ to: '/themes' })
@@ -144,9 +145,9 @@ export function CreateThemePage({ existing }: { existing?: Theme }) {
             }
             if (
               draft.wallpaper_config.type === 'image' &&
-              !safeUrl(image.trim())
+              !imageFile && !isUploadedImage(image)
             ) {
-              setError('Enter a valid HTTP or HTTPS image URL.')
+              setError('Upload a wallpaper image before saving.')
               return
             }
             mutation.mutate({
@@ -336,24 +337,26 @@ export function CreateThemePage({ existing }: { existing?: Theme }) {
                 >
                   <option value="fill">Solid color</option>
                   <option value="gradient">Gradient</option>
-                  <option value="image">Image URL</option>
+                  <option value="image">Image upload</option>
                 </select>
               </label>
               <div className="form-grid theme-background-fields">
                 {draft.wallpaper_config.type === 'image' ? (
                   <label className="full-width">
-                    Wallpaper image URL
-                    <input
-                      type="url"
-                      required
-                      placeholder="https://…"
-                      value={image}
-                      onChange={(e) => {
-                        setImage(e.target.value)
-                        wallpaper('image', fill, end, e.target.value)
-                      }}
-                    />
-                    <small>Use a hosted image link.</small>
+                    Wallpaper image
+                    <input type="file" accept="image/*" onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (!file) return
+                      try {
+                        validateImage(file)
+                        setImageFile(file)
+                        setError('')
+                        const reader = new FileReader()
+                        reader.onload = () => { setImage(String(reader.result)); wallpaper('image', fill, end, String(reader.result)) }
+                        reader.readAsDataURL(file)
+                      } catch (error) { setError((error as Error).message); e.target.value = '' }
+                    }} />
+                    <small>Image files up to 5MB. Uploaded when you save.</small>
                   </label>
                 ) : (
                   <>

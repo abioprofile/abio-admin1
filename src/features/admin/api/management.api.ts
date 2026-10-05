@@ -101,6 +101,16 @@ async function write<T>(
   return data.data
 }
 export const management = {
+  uploadProductAsset: (id: string, file: File) => {
+    const form = new FormData()
+    form.append('image', file)
+    return write<{ url: string; publicId: string }>('post', `/admin/astore/products/${id}/assets`, form)
+  },
+  uploadProductImage: (id: string, file: File) => {
+    const form = new FormData()
+    form.append('image', file)
+    return write<Product>('post', `/admin/astore/products/${id}/images`, form)
+  },
   products: (filters: Filters, signal?: AbortSignal) =>
     get<{ products: Product[]; pagination: PaginatedMeta }>(
       '/admin/astore/products',

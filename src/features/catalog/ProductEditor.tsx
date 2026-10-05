@@ -1,3 +1,6 @@
+import { AssetPicker } from './AssetPicker'
+import { errorStatus } from '@/shared/lib/api-error'
+import { isUploadedImage, validateImage } from '@/shared/lib/image-upload'
 import { safeUrl } from '@/shared/lib/display'
 import { useState, type FormEvent } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -55,6 +58,21 @@ function ProductForm({ product }: { product?: Product }) {
   const navigate = useNavigate()
   const [success, setSuccess] = useState('')
   const [localError, setLocalError] = useState('')
+  const [assetBusy, setAssetBusy] = useState(false)
+  const [front, setFront] = useState(product?.metadata?.preview?.frontOverlayUrl ?? '')
+  const [back, setBack] = useState(product?.metadata?.preview?.backOverlayUrl ?? '')
+  const [gallery, setGallery] = useState<string[] | null>(null)
+  const images = gallery ?? product?.imageUrls ?? []
+  const upload = useMutation({
+    mutationFn: (file: File) => management.uploadProductImage(product!.id, file),
+    onSuccess: async (saved) => { setGallery(saved.imageUrls); await client.invalidateQueries({ queryKey: ['admin'] }) },
+    onError: async (error) => {
+      if (errorStatus(error) === 409) {
+        setGallery(null)
+        await client.invalidateQueries({ queryKey: ['admin', 'product', product?.id] })
+      }
+    },
+  })
   const [variant, setVariant] = useState<Variant | 'new' | null>(null)
   const mutation = useMutation({
     mutationFn: (body: ProductInput) =>
@@ -78,6 +96,8 @@ function ProductForm({ product }: { product?: Product }) {
     try {
       const name = String(fields.get('name')).trim()
       if (!name) throw new Error('Enter a product name.')
+      if (images.some((url) => !isUploadedImage(url))) throw new Error('Remove legacy gallery images and upload replacements before saving.')
+      if ([front, back].some(url => url && !isUploadedImage(url))) throw new Error('Upload overlay artwork before saving.')
       mutation.mutate({
         name,
         type: fields.get('type') as 'standard' | 'custom',
@@ -87,11 +107,9 @@ function ProductForm({ product }: { product?: Product }) {
           String(fields.get('description')).trim() ||
           (product ? null : undefined),
         active: fields.get('active') === 'on',
-        imageUrls: String(fields.get('images'))
-          .split('\n')
-          .map((s) => s.trim())
-          .filter(Boolean),
+        imageUrls: images,
         metadata: {
+          ...product?.metadata,
           tagline: String(fields.get('tagline')).trim(),
           badge: String(fields.get('badge')).trim(),
           features: String(fields.get('features'))
@@ -99,12 +117,13 @@ function ProductForm({ product }: { product?: Product }) {
             .map((s) => s.trim())
             .filter(Boolean),
           preview: {
+            ...product?.metadata?.preview,
             enabled: fields.get('previewEnabled') === 'on',
             defaultColor: String(fields.get('defaultColor')),
             frontOverlayUrl:
-              String(fields.get('frontOverlay')).trim() || undefined,
+              front || undefined,
             backOverlayUrl:
-              String(fields.get('backOverlay')).trim() || undefined,
+              back || undefined,
           },
         },
         ...(fields.get('slug')
@@ -125,14 +144,14 @@ function ProductForm({ product }: { product?: Product }) {
             : 'Start with the essentials. Add color variants after saving.'
         }
       />
-      <Feedback error={mutation.error} success={success} />
+      <Feedback error={mutation.error || upload.error} success={success} />
       {localError && (
         <p className="notice error" role="alert">
           {localError}
         </p>
       )}
       <form className="panel editor-form" onSubmit={submit}>
-        <fieldset disabled={mutation.isPending}>
+        <fieldset disabled={mutation.isPending || upload.isPending || assetBusy}>
           <div className="section-heading">
             <h2>Product details</h2>
             <p className="muted">What your customers will see.</p>
@@ -206,19 +225,25 @@ function ProductForm({ product }: { product?: Product }) {
               />
               <small>One feature per line; up to 12.</small>
             </label>
-            <label className="full-width">
-              Product gallery URLs
-              <textarea
-                name="images"
-                rows={4}
-                defaultValue={product?.imageUrls?.join('\n') ?? ''}
-              />
-              <small>
-                One hosted image URL per line, up to 10. Order: front (cover),
-                back, then additional views. Variant galleries follow the same
-                order.
-              </small>
-            </label>
+            <div className="full-width">
+              <h3>Product gallery</h3>
+              {!product ? <p>Create the product first, then upload its images.</p> : <label>Upload product image
+                <input type="file" accept="image/*" disabled={upload.isPending || images.length >= 10} onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (!file) return
+                  try { validateImage(file); setLocalError(''); upload.mutate(file) } catch (error) { setLocalError((error as Error).message) }
+                  e.target.value = ''
+                }} />
+              </label>}
+              {upload.isPending && <p role="status">Uploading image…</p>}
+              <p className="muted">Up to 10 images, 5MB each. Uploads save immediately; save the product to apply removal or ordering.</p>
+              {images.map((url, index) => <div key={`${url}-${index}`} className="form-actions">
+                <img src={safeUrl(url)} alt={`Product image ${index + 1}`} width={64} height={64} style={{ objectFit: 'contain' }} />
+                {!isUploadedImage(url) && <span>Legacy image: remove and upload again.</span>}
+                <button type="button" className="button" disabled={index === 0} onClick={() => { const next = [...images]; [next[index - 1], next[index]] = [next[index], next[index - 1]]; setGallery(next) }}>Move earlier</button>
+                <button type="button" className="button" onClick={() => setGallery(images.filter((_, i) => i !== index))}>Remove image {index + 1}</button>
+              </div>)}
+            </div>
             <label className="check-label">
               <input
                 name="previewEnabled"
@@ -237,22 +262,8 @@ function ProductForm({ product }: { product?: Product }) {
                 }
               />
             </label>
-            <label>
-              Front transparent artwork URL
-              <input
-                type="url"
-                name="frontOverlay"
-                defaultValue={product?.metadata?.preview?.frontOverlayUrl ?? ''}
-              />
-            </label>
-            <label>
-              Back transparent artwork URL
-              <input
-                type="url"
-                name="backOverlay"
-                defaultValue={product?.metadata?.preview?.backOverlayUrl ?? ''}
-              />
-            </label>
+            <AssetPicker label="Front overlay" productId={product?.id} gallery={images} values={front ? [front] : []} onChange={urls => setFront(urls[0] ?? '')} onBusy={setAssetBusy} />
+            <AssetPicker label="Back overlay" productId={product?.id} gallery={images} values={back ? [back] : []} onChange={urls => setBack(urls[0] ?? '')} onBusy={setAssetBusy} />
             <p className="muted full-width">
               Use transparent artwork with no baked-in card background. The
               storefront applies the chosen color beneath it; uploaded gallery
@@ -294,7 +305,7 @@ function ProductForm({ product }: { product?: Product }) {
               <h2>Variants</h2>
               <p>Colors, stock, images, and optional price overrides.</p>
             </div>
-            <button className="button" onClick={() => setVariant('new')}>
+            <button className="button" disabled={assetBusy || upload.isPending || mutation.isPending} onClick={() => setVariant('new')}>
               <Icon name="plus" size={16} />
               Add variant
             </button>
@@ -329,6 +340,7 @@ function ProductForm({ product }: { product?: Product }) {
                 <Status active={item.active} />
                 <button
                   className="button"
+                  disabled={assetBusy || upload.isPending || mutation.isPending}
                   aria-label={`Edit ${item.colorName}`}
                   onClick={() => setVariant(item)}
                 >
@@ -350,6 +362,7 @@ function ProductForm({ product }: { product?: Product }) {
         <VariantForm
           product={product}
           variant={variant === 'new' ? undefined : variant}
+          onBusy={setAssetBusy}
           onClose={() => setVariant(null)}
         />
       )}
@@ -360,11 +373,15 @@ function VariantForm({
   product,
   variant,
   onClose,
+  onBusy,
 }: {
   product: Product
   variant?: Variant
   onClose: () => void
+  onBusy: (busy: boolean) => void
 }) {
+  const [assetBusy, setAssetBusy] = useState(false)
+  const [urls, setUrls] = useState(variant?.imageUrls ?? [])
   const client = useQueryClient()
   const [localError, setLocalError] = useState('')
   const mutation = useMutation({
@@ -380,13 +397,9 @@ function VariantForm({
     setLocalError('')
     const fields = new FormData(event.currentTarget)
     try {
-      const urls = String(fields.get('images'))
-        .split('\n')
-        .map((s) => s.trim())
-        .filter(Boolean)
-      if (urls.length > 10 || urls.some((url) => !safeUrl(url)))
+      if (urls.length > 10 || urls.some((url) => !isUploadedImage(url)))
         throw new Error(
-          'Add up to 10 valid http or https image URLs, one per line.',
+          'Choose up to 10 images uploaded to this product.',
         )
       const name = String(fields.get('colorName')).trim()
       if (!name) throw new Error('Enter a color name.')
@@ -409,7 +422,7 @@ function VariantForm({
     <Modal
       title={variant ? `Edit ${variant.colorName}` : 'Add variant'}
       onClose={onClose}
-      busy={mutation.isPending}
+      busy={mutation.isPending || assetBusy}
     >
       <form className="editor-form" onSubmit={submit}>
         <Feedback error={mutation.error} />
@@ -418,7 +431,7 @@ function VariantForm({
             {localError}
           </p>
         )}
-        <fieldset disabled={mutation.isPending}>
+        <fieldset disabled={mutation.isPending || assetBusy}>
           <div className="form-grid">
             <label>
               Color name
@@ -467,16 +480,7 @@ function VariantForm({
               />
               <small>Leave blank to use the base price. Zero means free.</small>
             </label>
-            <label className="full-width">
-              Image URLs
-              <textarea
-                name="images"
-                rows={4}
-                placeholder="https://… (one URL per line)"
-                defaultValue={variant?.imageUrls.join('\n') ?? ''}
-              />
-              <small>Up to 10 image links.</small>
-            </label>
+            <AssetPicker label="Variant images" productId={product.id} gallery={product.imageUrls} values={urls} onChange={setUrls} multiple onBusy={busy => { setAssetBusy(busy); onBusy(busy) }} />
           </div>
           <label className="check-label">
             <input
