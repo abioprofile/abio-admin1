@@ -8,5 +8,7 @@ export const queryKeys = {
   order: (id: string) => ['admin', 'order', id] as const,
   users: (filters?: Record<string, unknown>) => ['admin', 'users', filters] as const,
   invites: ['admin', 'invites'] as const,
+  giftAccounts: (filters?: Record<string, unknown>) => ['admin', 'gift-accounts', filters] as const,
+  giftAccount: (id: string) => ['admin', 'gift-account', id] as const,
   badgeRequests: (filters?: Record<string, unknown>) => ['admin', 'badge-requests', filters] as const,
 }

@@ -15,7 +15,9 @@ import { errorMessage } from '@/shared/lib/api-error'
 
 export function AdminShell() {
   const path = useLocation({ select: (location) => location.pathname })
-  const section = path.startsWith('/business-inquiries')
+  const section = path.startsWith('/gifts')
+    ? 'Gift accounts'
+    : path.startsWith('/business-inquiries')
     ? 'Business enquiries'
     : path.startsWith('/products')
     ? 'Products'
@@ -71,6 +73,7 @@ export function AdminShell() {
                 { to: '/business-inquiries', label: 'Business enquiries', icon: 'business' },
                 { to: '/themes', label: 'Themes', icon: 'themes' },
                 { to: '/users', label: 'Users', icon: 'users' },
+                { to: '/gifts', label: 'Gift accounts', icon: 'gift' },
                 {
                   to: '/verification',
                   label: 'Verification',

@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 const paths = {
+  gift: 'M3 8h18v4H3V8Z M5 12v9h14v-9 M12 8v13 M12 8S10 3 7.5 4.5 8 8 12 8Zm0 0s2-5 4.5-3.5S16 8 12 8Z',
   business: 'M3 7h18v14H3V7Z M8 7V3h8v4 M3 12h18 M10 12v3h4v-3',
   themes:
     'M12 3a9 9 0 1 0 0 18h1a2 2 0 0 0 1-4c-1-1 0-3 2-3h2a3 3 0 0 0 3-3 9 9 0 0 0-9-8Z M7 10h.01 M10 6h.01 M15 7h.01 M6 14h.01',

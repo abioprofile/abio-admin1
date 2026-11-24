@@ -1661,3 +1661,110 @@ td .muted {
 .business-enquiry-details ul { padding-left: 1.2rem; margin: 0; }
 
 .business-enquiry-details { padding: 0 24px 20px; }
+
+/* Gift accounts */
+.detail-panel + .detail-grid,
+.detail-grid + .detail-panel {
+  margin-top: 24px;
+}
+.gift-form {
+  padding: 18px 0 0;
+}
+.gift-form h3 {
+  font-size: 14px;
+  margin: 0 0 16px;
+}
+.gift-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+.gift-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border);
+}
+.gift-avatar.placeholder {
+  display: inline-grid;
+  place-items: center;
+  background: #eef2e6;
+  font-weight: 600;
+  font-size: 22px;
+}
+.gift-theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 14px;
+  margin: 16px 0;
+}
+.gift-theme-option {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  text-align: left;
+}
+.gift-theme-option.selected {
+  border-color: #536c39;
+  box-shadow: 0 0 0 2px #a7bd87;
+}
+.gift-theme-option .theme-preview.compact {
+  min-height: 200px;
+  padding: 16px 12px;
+}
+.gift-link-list {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.gift-link-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  flex-wrap: wrap;
+}
+.gift-link-list li > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 180px;
+  overflow-wrap: anywhere;
+}
+.gift-link-list .muted {
+  font-size: 12px;
+}
+.gift-link-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.claim-link-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.claim-qr {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.claim-qr img {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  image-rendering: pixelated;
+}

@@ -17,6 +17,8 @@ import { Route as StaffInvitesRouteImport } from './routes/_staff/invites'
 import { Route as StaffVerificationRouteImport } from './routes/_staff/verification'
 import { Route as AdminAcceptInviteRouteImport } from './routes/admin/accept-invite'
 import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
+import { Route as StaffGiftsIndexRouteImport } from './routes/_staff/gifts.index'
+import { Route as StaffGiftsIdRouteImport } from './routes/_staff/gifts.$id'
 import { Route as StaffOrdersIndexRouteImport } from './routes/_staff/orders.index'
 import { Route as StaffOrdersIdRouteImport } from './routes/_staff/orders.$id'
 import { Route as StaffProductsIndexRouteImport } from './routes/_staff/products.index'
@@ -66,6 +68,16 @@ const AuthSignInRoute = AuthSignInRouteImport.update({
   id: '/auth/sign-in',
   path: '/auth/sign-in',
   getParentRoute: () => rootRouteImport,
+} as any)
+const StaffGiftsIndexRoute = StaffGiftsIndexRouteImport.update({
+  id: '/gifts/',
+  path: '/gifts/',
+  getParentRoute: () => StaffRoute,
+} as any)
+const StaffGiftsIdRoute = StaffGiftsIdRouteImport.update({
+  id: '/gifts/$id',
+  path: '/gifts/$id',
+  getParentRoute: () => StaffRoute,
 } as any)
 const StaffOrdersIndexRoute = StaffOrdersIndexRouteImport.update({
   id: '/orders/',
@@ -126,12 +138,14 @@ export interface FileRoutesByFullPath {
   '/verification': typeof StaffVerificationRoute
   '/admin/accept-invite': typeof AdminAcceptInviteRoute
   '/auth/sign-in': typeof AuthSignInRoute
+  '/gifts/$id': typeof StaffGiftsIdRoute
   '/orders/$id': typeof StaffOrdersIdRoute
   '/products/$id': typeof StaffProductsIdRoute
   '/products/new': typeof StaffProductsNewRoute
   '/themes/$id': typeof StaffThemesIdRoute
   '/themes/new': typeof StaffThemesNewRoute
   '/users/$id': typeof StaffUsersIdRoute
+  '/gifts/': typeof StaffGiftsIndexRoute
   '/orders/': typeof StaffOrdersIndexRoute
   '/products/': typeof StaffProductsIndexRoute
   '/themes/': typeof StaffThemesIndexRoute
@@ -145,12 +159,14 @@ export interface FileRoutesByTo {
   '/admin/accept-invite': typeof AdminAcceptInviteRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/': typeof StaffIndexRoute
+  '/gifts/$id': typeof StaffGiftsIdRoute
   '/orders/$id': typeof StaffOrdersIdRoute
   '/products/$id': typeof StaffProductsIdRoute
   '/products/new': typeof StaffProductsNewRoute
   '/themes/$id': typeof StaffThemesIdRoute
   '/themes/new': typeof StaffThemesNewRoute
   '/users/$id': typeof StaffUsersIdRoute
+  '/gifts': typeof StaffGiftsIndexRoute
   '/orders': typeof StaffOrdersIndexRoute
   '/products': typeof StaffProductsIndexRoute
   '/themes': typeof StaffThemesIndexRoute
@@ -166,12 +182,14 @@ export interface FileRoutesById {
   '/admin/accept-invite': typeof AdminAcceptInviteRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/_staff/': typeof StaffIndexRoute
+  '/_staff/gifts/$id': typeof StaffGiftsIdRoute
   '/_staff/orders/$id': typeof StaffOrdersIdRoute
   '/_staff/products/$id': typeof StaffProductsIdRoute
   '/_staff/products/new': typeof StaffProductsNewRoute
   '/_staff/themes/$id': typeof StaffThemesIdRoute
   '/_staff/themes/new': typeof StaffThemesNewRoute
   '/_staff/users/$id': typeof StaffUsersIdRoute
+  '/_staff/gifts/': typeof StaffGiftsIndexRoute
   '/_staff/orders/': typeof StaffOrdersIndexRoute
   '/_staff/products/': typeof StaffProductsIndexRoute
   '/_staff/themes/': typeof StaffThemesIndexRoute
@@ -187,12 +205,14 @@ export interface FileRouteTypes {
     | '/verification'
     | '/admin/accept-invite'
     | '/auth/sign-in'
+    | '/gifts/$id'
     | '/orders/$id'
     | '/products/$id'
     | '/products/new'
     | '/themes/$id'
     | '/themes/new'
     | '/users/$id'
+    | '/gifts/'
     | '/orders/'
     | '/products/'
     | '/themes/'
@@ -206,12 +226,14 @@ export interface FileRouteTypes {
     | '/admin/accept-invite'
     | '/auth/sign-in'
     | '/'
+    | '/gifts/$id'
     | '/orders/$id'
     | '/products/$id'
     | '/products/new'
     | '/themes/$id'
     | '/themes/new'
     | '/users/$id'
+    | '/gifts'
     | '/orders'
     | '/products'
     | '/themes'
@@ -226,12 +248,14 @@ export interface FileRouteTypes {
     | '/admin/accept-invite'
     | '/auth/sign-in'
     | '/_staff/'
+    | '/_staff/gifts/$id'
     | '/_staff/orders/$id'
     | '/_staff/products/$id'
     | '/_staff/products/new'
     | '/_staff/themes/$id'
     | '/_staff/themes/new'
     | '/_staff/users/$id'
+    | '/_staff/gifts/'
     | '/_staff/orders/'
     | '/_staff/products/'
     | '/_staff/themes/'
@@ -302,6 +326,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/sign-in'
       preLoaderRoute: typeof AuthSignInRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_staff/gifts/': {
+      id: '/_staff/gifts/'
+      path: '/gifts'
+      fullPath: '/gifts/'
+      preLoaderRoute: typeof StaffGiftsIndexRouteImport
+      parentRoute: typeof StaffRoute
+    }
+    '/_staff/gifts/$id': {
+      id: '/_staff/gifts/$id'
+      path: '/gifts/$id'
+      fullPath: '/gifts/$id'
+      preLoaderRoute: typeof StaffGiftsIdRouteImport
+      parentRoute: typeof StaffRoute
     }
     '/_staff/orders/': {
       id: '/_staff/orders/'
@@ -381,12 +419,14 @@ interface StaffRouteChildren {
   StaffInvitesRoute: typeof StaffInvitesRoute
   StaffVerificationRoute: typeof StaffVerificationRoute
   StaffIndexRoute: typeof StaffIndexRoute
+  StaffGiftsIdRoute: typeof StaffGiftsIdRoute
   StaffOrdersIdRoute: typeof StaffOrdersIdRoute
   StaffProductsIdRoute: typeof StaffProductsIdRoute
   StaffProductsNewRoute: typeof StaffProductsNewRoute
   StaffThemesIdRoute: typeof StaffThemesIdRoute
   StaffThemesNewRoute: typeof StaffThemesNewRoute
   StaffUsersIdRoute: typeof StaffUsersIdRoute
+  StaffGiftsIndexRoute: typeof StaffGiftsIndexRoute
   StaffOrdersIndexRoute: typeof StaffOrdersIndexRoute
   StaffProductsIndexRoute: typeof StaffProductsIndexRoute
   StaffThemesIndexRoute: typeof StaffThemesIndexRoute
@@ -398,12 +438,14 @@ const StaffRouteChildren: StaffRouteChildren = {
   StaffInvitesRoute: StaffInvitesRoute,
   StaffVerificationRoute: StaffVerificationRoute,
   StaffIndexRoute: StaffIndexRoute,
+  StaffGiftsIdRoute: StaffGiftsIdRoute,
   StaffOrdersIdRoute: StaffOrdersIdRoute,
   StaffProductsIdRoute: StaffProductsIdRoute,
   StaffProductsNewRoute: StaffProductsNewRoute,
   StaffThemesIdRoute: StaffThemesIdRoute,
   StaffThemesNewRoute: StaffThemesNewRoute,
   StaffUsersIdRoute: StaffUsersIdRoute,
+  StaffGiftsIndexRoute: StaffGiftsIndexRoute,
   StaffOrdersIndexRoute: StaffOrdersIndexRoute,
   StaffProductsIndexRoute: StaffProductsIndexRoute,
   StaffThemesIndexRoute: StaffThemesIndexRoute,
