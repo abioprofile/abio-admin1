@@ -36,7 +36,7 @@ export function SignInPage({
         </strong>
       </div>
       <section className="login-card">
-        <span className="eyebrow">YOUR WORKSPACE</span>
+        {/* <span className="eyebrow">YOUR WORKSPACE</span> */}
         <h1>Welcome back.</h1>
         <p className="muted">
           {invitation
